@@ -1,26 +1,30 @@
 version: "3"
 services:
-  consul-dev:
+  consul:
     image: consul:latest
-    container_name: "consul-dev"
-    hostname: consul-dev
-    networks:
-      - consul-net
+    container_name: "consul"
+    hostname: consul
     ports:
       - "8500:8500"
       - "8600:8600/udp"
     command: consul agent -dev -client=0.0.0.0
 
-#  consul-template:
-#    image: hashicorp/consul-template:alpine
-#    container_name: "consul-template"
-#    hostname: consul-template
-#    networks:
-#      - consul-net
-#    volumes:
-#      - "./consul-template.hcl:/data/consul-template.hcl:ro"
-#      - "./src/config:/config"
-#    command: consul-template -config /data/consul-template.hcl
+  zookeeper:
+    image: confluentinc/cp-zookeeper:${CP_ZOOKEEPER}
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
 
-networks:
-  consul-net:
+  kafka:
+    image: confluentinc/cp-kafka:${CP_KAFKA}
+    depends_on:
+      - zookeeper
+    ports:
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
