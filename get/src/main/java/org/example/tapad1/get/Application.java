@@ -23,8 +23,8 @@ public class Application {
         ImmutableRegistration.builder()
             .id(config.name)
             .name("app-tapad-read")
-            .port(8081)
-            .address("localhost")
+            .port(config.port)
+            .address(config.host)
             .check(Registration.RegCheck.ttl(10)) // registers with a TTL of 3 seconds
             .tags(Collections.singletonList("tapad-read"))
             .meta(Collections.singletonMap("version", "1.0"))
@@ -32,10 +32,13 @@ public class Application {
     agentClient.register(service);
 
     /* http server */
+
     ServerBuilder sb = Server.builder();
     sb.http(config.port);
     // Add a simple 'Hello, world!' service.
     sb.service("/", (ctx, res) -> HttpResponse.of("Hello, world! from " + config.name));
+    // POST /analytics?timestamp={millis_since_epoch}&user={username}&{click|impression}
+    sb.annotatedService(new HttpService());
     Server server = sb.build();
     CompletableFuture<Void> future = server.start();
     future.join();
