@@ -1,12 +1,10 @@
 package com.zhenik.tapad1.processor.messaging;
 
 import com.zhenik.tapad1.processor.Config;
-import com.zhenik.tapad1.schema.Schema;
 import com.zhenik.tapad1.schema.serde.Analytics;
 import com.zhenik.tapad1.schema.serde.AnalyticsDeserializer;
 import com.zhenik.tapad1.schema.serde.AnalyticsSerializer;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -16,11 +14,8 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.Initializer;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.kstream.Serialized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,13 +62,6 @@ public class AnalyticsKafkaProcessor {
     analyticsSerde.configure(new HashMap<>(), false);
 
     final KStream<String, String> sourceStream = streamsBuilder.stream(topic);
-    //sourceStream.peek((key, value) -> System.out.println(key + ": " + value));
-
-    //final KStream<String, String> userStream =
-    //    sourceStream
-    //        .mapValues(value -> value.split(" ")[0])
-    //        .peek((key, value) -> System.out.println("Impressions " + key + ": " + value));
-
     sourceStream
         .peek((key, value) -> System.out.println(key + ": " + value))
         .groupByKey()
@@ -91,27 +79,6 @@ public class AnalyticsKafkaProcessor {
             }, Materialized.with(Serdes.String(), analyticsSerde))
         .toStream()
         .peek((k, v) -> System.out.println("Analytics " + k + ": " + v.toString()));
-
-    //final KStream<String, String>[] actionStreams =
-    //    sourceStream
-    //        .mapValues(value -> value.split(" ")[1])
-    //        .branch(
-    //            (key, value) -> value.equalsIgnoreCase(Schema.CLICK),
-    //            (key, value) -> value.equalsIgnoreCase(Schema.IMPRESSION));
-    //
-    //actionStreams[0]
-    //    .groupByKey()
-    //    .count()
-    //    .toStream()
-    //    .peek((key, value) -> System.out.println("Clicks " + key + ": " + value))
-    //    .to("click-stream-v1", Produced.with(Serdes.String(), Serdes.Long()));
-    //
-    //actionStreams[1]
-    //    .groupByKey()
-    //    .count()
-    //    .toStream()
-    //    .peek((key, value) -> System.out.println("Impressions " + key + ": " + value))
-    //    .to("impression-stream-v1", Produced.with(Serdes.String(), Serdes.Long()));
 
     final Topology topology = streamsBuilder.build();
     log.info("Topology: \n{}",topology.describe());
