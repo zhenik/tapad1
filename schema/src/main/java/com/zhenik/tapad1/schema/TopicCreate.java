@@ -13,7 +13,14 @@ public class TopicCreate {
 
   public static void main(String[] args) {
     final String sourceTopic = "timestamp-user-action-v1";
+    final String analyticsTopic = "analytics-v1";
+
+    final String impressionsTopic = "impression-stream-v1";
+    final String clicksTopic = "click-stream-v1";
     createTopic(sourceTopic, 10);
+    createTopic(analyticsTopic, 10);
+    createTopic(impressionsTopic, 10);
+    createTopic(clicksTopic, 10);
   }
 
   public static void createTopic(final String topicName, final int partitions) {

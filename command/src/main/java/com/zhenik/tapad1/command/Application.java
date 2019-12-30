@@ -31,7 +31,7 @@ public class Application {
     ServerBuilder sb = Server.builder();
     sb.http(config.port);
     // Add a simple 'Hello, world!' service.
-    sb.service("/", (ctx, res) -> HttpResponse.of("Hello, world! from " + config.name));
+    sb.service("/", (ctx, res) -> HttpResponse.of("Hello, world! from " + config.clientId));
     // POST /analytics?timestamp={millis_since_epoch}&user={username}&{click|impression}
     sb.annotatedService(new HttpService(new CommandKafkaProducer(config)));
     Server server = sb.build();

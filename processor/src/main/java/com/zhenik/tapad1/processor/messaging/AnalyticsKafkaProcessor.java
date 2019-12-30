@@ -2,10 +2,15 @@ package com.zhenik.tapad1.processor.messaging;
 
 import com.zhenik.tapad1.processor.Config;
 import com.zhenik.tapad1.schema.Schema;
+import com.zhenik.tapad1.schema.serde.Analytics;
+import com.zhenik.tapad1.schema.serde.AnalyticsDeserializer;
+import com.zhenik.tapad1.schema.serde.AnalyticsSerializer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -13,9 +18,14 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Initializer;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.Serialized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.zhenik.tapad1.schema.Schema.CLICK;
+import static com.zhenik.tapad1.schema.Schema.IMPRESSION;
 
 public class AnalyticsKafkaProcessor {
 
@@ -47,50 +57,61 @@ public class AnalyticsKafkaProcessor {
     // streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
     // Use a temporary directory for storing state, which will be automatically removed after the
     // test.
-    streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/opt/stream-analytics");
+    streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, "/tmp/streams-analytics");
     return streamsConfiguration;
   }
 
   Topology buildTopology(StreamsBuilder streamsBuilder) {
+    Serde<Analytics> analyticsSerde =
+        Serdes.serdeFrom(new AnalyticsSerializer(), new AnalyticsDeserializer());
+    analyticsSerde.configure(new HashMap<>(), false);
+
     final KStream<String, String> sourceStream = streamsBuilder.stream(topic);
-    sourceStream.peek((key, value) -> System.out.println(key + ": " + value));
+    //sourceStream.peek((key, value) -> System.out.println(key + ": " + value));
 
-    final KStream<String, String> userStream =
-        sourceStream
-            .mapValues(value -> value.split(" ")[0])
-            .peek((key, value) -> System.out.println("Impressions " + key + ": " + value));
+    //final KStream<String, String> userStream =
+    //    sourceStream
+    //        .mapValues(value -> value.split(" ")[0])
+    //        .peek((key, value) -> System.out.println("Impressions " + key + ": " + value));
 
-    userStream
+    sourceStream
+        .peek((key, value) -> System.out.println(key + ": " + value))
         .groupByKey()
         .aggregate(
-            (Initializer<HashSet<String>>) HashSet::new,
+            Analytics::new,
             (k, v, a) -> {
-              a.add(v);
+              final String[] userAndAction = v.split(" ");
+              a.addUser(userAndAction[0]);
+              if (IMPRESSION.equalsIgnoreCase(userAndAction[1])){
+                a.incrementImpressions();
+              } else if (CLICK.equalsIgnoreCase(userAndAction[1])) {
+                a.incrementClicks();
+              }
               return a;
-            })
+            }, Materialized.with(Serdes.String(), analyticsSerde))
         .toStream()
-        .peek((k, v) -> System.out.println("Users " + k + ": " + v));
+        .peek((k, v) -> System.out.println("Analytics " + k + ": " + v.toString()));
 
-    final KStream<String, String>[] actionStreams =
-        sourceStream
-            .mapValues(value -> value.split(" ")[1])
-            .branch(
-                (key, value) -> value.equalsIgnoreCase(Schema.CLICK),
-                (key, value) -> value.equalsIgnoreCase(Schema.IMPRESSION));
-
-    actionStreams[0]
-        .groupByKey()
-        .count()
-        .toStream()
-        .peek((key, value) -> System.out.println("Clicks " + key + ": " + value))
-        .to("click-stream-v1", Produced.with(Serdes.String(), Serdes.Long()));
-
-    actionStreams[1]
-        .groupByKey()
-        .count()
-        .toStream()
-        .peek((key, value) -> System.out.println("Impressions " + key + ": " + value))
-        .to("impression-stream-v1", Produced.with(Serdes.String(), Serdes.Long()));
+    //final KStream<String, String>[] actionStreams =
+    //    sourceStream
+    //        .mapValues(value -> value.split(" ")[1])
+    //        .branch(
+    //            (key, value) -> value.equalsIgnoreCase(Schema.CLICK),
+    //            (key, value) -> value.equalsIgnoreCase(Schema.IMPRESSION));
+    //
+    //actionStreams[0]
+    //    .groupByKey()
+    //    .count()
+    //    .toStream()
+    //    .peek((key, value) -> System.out.println("Clicks " + key + ": " + value))
+    //    .to("click-stream-v1", Produced.with(Serdes.String(), Serdes.Long()));
+    //
+    //actionStreams[1]
+    //    .groupByKey()
+    //    .count()
+    //    .toStream()
+    //    .peek((key, value) -> System.out.println("Impressions " + key + ": " + value))
+    //    .to("impression-stream-v1", Produced.with(Serdes.String(), Serdes.Long()));
 
     final Topology topology = streamsBuilder.build();
     log.info("Topology: \n{}",topology.describe());
@@ -98,7 +119,7 @@ public class AnalyticsKafkaProcessor {
   }
 
   public void start() {
-    streams.cleanUp(); // don't do this in prod as it clears your state stores
+    //streams.cleanUp(); // don't do this in prod as it clears your state stores
     final CountDownLatch startLatch = new CountDownLatch(1);
     streams.setStateListener(
         (newState, oldState) -> {
