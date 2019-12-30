@@ -1,14 +1,9 @@
-package org.example.tapad1.get;
+package com.zhenik.tapad1.command;
 
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
-import com.orbitz.consul.AgentClient;
-import com.orbitz.consul.Consul;
-import com.orbitz.consul.NotRegisteredException;
-import com.orbitz.consul.model.agent.ImmutableRegistration;
-import com.orbitz.consul.model.agent.Registration;
-import java.util.Collections;
+import com.zhenik.tapad1.command.messaging.CommandKafkaProducer;
 import java.util.concurrent.CompletableFuture;
 
 public class Application {
@@ -38,7 +33,7 @@ public class Application {
     // Add a simple 'Hello, world!' service.
     sb.service("/", (ctx, res) -> HttpResponse.of("Hello, world! from " + config.name));
     // POST /analytics?timestamp={millis_since_epoch}&user={username}&{click|impression}
-    sb.annotatedService(new HttpService());
+    sb.annotatedService(new HttpService(new CommandKafkaProducer(config)));
     Server server = sb.build();
     CompletableFuture<Void> future = server.start();
     future.join();

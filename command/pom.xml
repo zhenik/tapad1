@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>tapad1</artifactId>
-    <groupId>org.example</groupId>
+    <groupId>com.zhenik</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -12,6 +12,10 @@
   <artifactId>command</artifactId>
 
   <dependencies>
+    <dependency>
+      <groupId>com.zhenik</groupId>
+      <artifactId>schema</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.linecorp.armeria</groupId>
       <artifactId>armeria</artifactId>

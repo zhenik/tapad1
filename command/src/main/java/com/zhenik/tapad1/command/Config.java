@@ -1,4 +1,4 @@
-package org.example.tapad1.get;
+package com.zhenik.tapad1.command;
 
 import com.typesafe.config.ConfigFactory;
 import java.util.UUID;
