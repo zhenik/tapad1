@@ -4,14 +4,14 @@ import com.typesafe.config.ConfigFactory;
 import java.util.UUID;
 
 public class Config {
-  public final String name;
+  public final String clientId;
   public final String kafkaBootstrapServers;
   public final String topic;
   public final String host;
   public final int port;
 
   private Config(String kafkaBootstrapServers, String topic, String host, int port) {
-    this.name = UUID.randomUUID().toString();
+    this.clientId = UUID.randomUUID().toString();
     this.kafkaBootstrapServers = kafkaBootstrapServers;
     this.topic = topic;
     this.host = host;

@@ -22,7 +22,7 @@ public class CommandKafkaProducer {
     //todo: extract props to config
     Properties props = new Properties();
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.kafkaBootstrapServers);
-    props.put(ProducerConfig.CLIENT_ID_CONFIG, config.name);
+    props.put(ProducerConfig.CLIENT_ID_CONFIG, config.clientId);
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
