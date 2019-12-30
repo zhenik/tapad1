@@ -10,12 +10,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +28,10 @@ public class AnalyticsKafkaProcessor {
 
   private static final Logger log = LoggerFactory.getLogger(AnalyticsKafkaProcessor.class);
   private final KafkaStreams streams;
-  private final String topic;
 
   public AnalyticsKafkaProcessor(Config config) {
-    this.topic = config.topic;
     final Properties streamsConfiguration = getStreamsConfiguration(config);
-    this.streams = new KafkaStreams(buildTopology(new StreamsBuilder()), streamsConfiguration);
+    this.streams = new KafkaStreams(buildTopology(config), streamsConfiguration);
   }
 
   private Properties getStreamsConfiguration(Config config) {
@@ -45,9 +45,11 @@ public class AnalyticsKafkaProcessor {
         StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     streamsConfiguration.put(
         StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-    // Records should be flushed every 10 seconds. This is less than the default
+    streamsConfiguration.setProperty(StreamsConfig.TOPOLOGY_OPTIMIZATION, StreamsConfig.OPTIMIZE);
+    // Records should be flushed every 10 seconds. This is less than the default 30
     // in order to keep this example interactive.
-    // streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
+     streamsConfiguration.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 10 * 1000);
+    // streamsConfiguration.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE); // require 3 brokers
     // For illustrative purposes we disable record caches.
     // streamsConfiguration.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
     // Use a temporary directory for storing state, which will be automatically removed after the
@@ -56,12 +58,13 @@ public class AnalyticsKafkaProcessor {
     return streamsConfiguration;
   }
 
-  Topology buildTopology(StreamsBuilder streamsBuilder) {
+  Topology buildTopology(Config config) {
+    final StreamsBuilder streamsBuilder = new StreamsBuilder();
     Serde<Analytics> analyticsSerde =
         Serdes.serdeFrom(new AnalyticsSerializer(), new AnalyticsDeserializer());
     analyticsSerde.configure(new HashMap<>(), false);
 
-    final KStream<String, String> sourceStream = streamsBuilder.stream(topic);
+    final KStream<String, String> sourceStream = streamsBuilder.stream(config.inputTopic);
     sourceStream
         .peek((key, value) -> System.out.println(key + ": " + value))
         .groupByKey()
@@ -76,9 +79,13 @@ public class AnalyticsKafkaProcessor {
                 a.incrementClicks();
               }
               return a;
-            }, Materialized.with(Serdes.String(), analyticsSerde))
+            }
+            , Materialized.with(Serdes.String(), analyticsSerde)
+            //Materialized.<String, Analytics, KeyValueStore<Bytes, byte[]>>as("analytics-table-store").withValueSerde(analyticsSerde)
+        )
         .toStream()
-        .peek((k, v) -> System.out.println("Analytics " + k + ": " + v.toString()));
+        .peek((k, v) -> System.out.println("Analytics -> timestamp= " + k + ", " + v.view()))
+        .to(config.outputTopic);
 
     final Topology topology = streamsBuilder.build();
     log.info("Topology: \n{}",topology.describe());

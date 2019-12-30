@@ -57,6 +57,14 @@ public class Analytics {
   }
 
   @Override public String toString() {
+    return "Analytics{" +
+        "clicks=" + clicks +
+        ", impressions=" + impressions +
+        ", users=" + users +
+        '}';
+  }
+
+  public String view() {
     return "clicks=" + clicks +
         ", impressions=" + impressions +
         ", users=" + users.size();
