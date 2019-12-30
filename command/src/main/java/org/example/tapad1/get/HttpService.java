@@ -12,7 +12,6 @@ public class HttpService {
 
   @Post("/analytics")
   public HttpResponse addRecord(HttpParameters parameters) {
-    // log.info("timestamp: {} ; username: {} ; action: {}", parameters.getAll());
     log.info("params: {}", parameters.toString());
     return HttpResponse.of(HttpStatus.OK);
   }

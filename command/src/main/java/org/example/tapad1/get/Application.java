@@ -17,19 +17,19 @@ public class Application {
     final Config config = Config.loadConfiguration();
 
     /* Service discovery */
-    Consul client = Consul.builder().build();
-    AgentClient agentClient = client.agentClient();
-    Registration service =
-        ImmutableRegistration.builder()
-            .id(config.name)
-            .name("app-tapad-read")
-            .port(config.port)
-            .address(config.host)
-            .check(Registration.RegCheck.ttl(10)) // registers with a TTL of 3 seconds
-            .tags(Collections.singletonList("tapad-read"))
-            .meta(Collections.singletonMap("version", "1.0"))
-            .build();
-    agentClient.register(service);
+    //Consul client = Consul.builder().build();
+    //AgentClient agentClient = client.agentClient();
+    //Registration service =
+    //    ImmutableRegistration.builder()
+    //        .id(config.name)
+    //        .name("app-tapad-read")
+    //        .port(config.port)
+    //        .address(config.host)
+    //        .check(Registration.RegCheck.ttl(10)) // registers with a TTL of 3 seconds
+    //        .tags(Collections.singletonList("tapad-read"))
+    //        .meta(Collections.singletonMap("version", "1.0"))
+    //        .build();
+    //agentClient.register(service);
 
     /* http server */
 
@@ -44,18 +44,18 @@ public class Application {
     future.join();
 
     /* health check */
-    CompletableFuture.supplyAsync(
-        () -> {
-          try {
-            while (true) {
-              Thread.sleep(3_000);
-              agentClient.pass(config.name);
-            }
-          } catch (NotRegisteredException | InterruptedException e) {
-            e.printStackTrace();
-            server.stop();
-          }
-          return null;
-        });
+    //CompletableFuture.supplyAsync(
+    //    () -> {
+    //      try {
+    //        while (true) {
+    //          Thread.sleep(3_000);
+    //          agentClient.pass(config.name);
+    //        }
+    //      } catch (NotRegisteredException | InterruptedException e) {
+    //        e.printStackTrace();
+    //        server.stop();
+    //      }
+    //      return null;
+    //    });
   }
 }

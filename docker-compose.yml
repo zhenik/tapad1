@@ -1,13 +1,13 @@
 version: "3"
 services:
-  consul:
-    image: consul:latest
-    container_name: "consul"
-    hostname: consul
-    ports:
-      - "8500:8500"
-      - "8600:8600/udp"
-    command: consul agent -dev -client=0.0.0.0
+#  consul:
+#    image: consul:latest
+#    container_name: "consul"
+#    hostname: consul
+#    ports:
+#      - "8500:8500"
+#      - "8600:8600/udp"
+#    command: consul agent -dev -client=0.0.0.0
 
   zookeeper:
     image: confluentinc/cp-zookeeper:${CP_ZOOKEEPER}
