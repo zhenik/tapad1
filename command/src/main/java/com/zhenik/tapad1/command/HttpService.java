@@ -4,7 +4,6 @@ import com.linecorp.armeria.common.HttpParameters;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.common.HttpStatus;
 import com.linecorp.armeria.server.annotation.Post;
-import com.zhenik.tapad1.command.messaging.CommandKafkaProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

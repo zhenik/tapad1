@@ -1,6 +1,5 @@
-package com.zhenik.tapad1.command.messaging;
+package com.zhenik.tapad1.command;
 
-import com.zhenik.tapad1.command.Config;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;

@@ -1,6 +1,5 @@
-package com.zhenik.tapad1.processor.messaging;
+package com.zhenik.tapad1.processor;
 
-import com.zhenik.tapad1.processor.Config;
 import com.zhenik.tapad1.schema.serde.Analytics;
 import com.zhenik.tapad1.schema.serde.AnalyticsDeserializer;
 import com.zhenik.tapad1.schema.serde.AnalyticsSerializer;
@@ -10,14 +9,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.state.KeyValueStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +81,10 @@ public class AnalyticsKafkaProcessor {
             //Materialized.<String, Analytics, KeyValueStore<Bytes, byte[]>>as("analytics-table-store").withValueSerde(analyticsSerde)
         )
         .toStream()
-        .peek((k, v) -> System.out.println("Analytics -> timestamp= " + k + ", " + v.view()))
+        .mapValues( (readOnlyKey, value) -> {
+          System.out.println("Analytics -> timestamp = " + readOnlyKey + ", " + value);
+          return value.view();
+        })
         .to(config.outputTopic);
 
     final Topology topology = streamsBuilder.build();

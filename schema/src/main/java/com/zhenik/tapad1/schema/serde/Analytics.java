@@ -65,8 +65,8 @@ public class Analytics {
   }
 
   public String view() {
-    return "clicks=" + clicks +
-        ", impressions=" + impressions +
-        ", users=" + users.size();
+    return "unique_users," + users.size()
+        + "\nclicks,"+clicks
+        + "\nimpressions,"+impressions;
   }
 }

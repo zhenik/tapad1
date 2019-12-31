@@ -1,7 +1,5 @@
 package com.zhenik.tapad1.processor;
 
-import com.zhenik.tapad1.processor.messaging.AnalyticsKafkaProcessor;
-
 public class Application {
 
   public static void main(String[] args) throws Exception {

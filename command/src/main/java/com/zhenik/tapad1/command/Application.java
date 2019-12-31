@@ -3,7 +3,6 @@ package com.zhenik.tapad1.command;
 import com.linecorp.armeria.common.HttpResponse;
 import com.linecorp.armeria.server.Server;
 import com.linecorp.armeria.server.ServerBuilder;
-import com.zhenik.tapad1.command.messaging.CommandKafkaProducer;
 import java.util.concurrent.CompletableFuture;
 
 public class Application {
