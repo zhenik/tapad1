@@ -22,7 +22,7 @@ public class KafkaRedisMaterializer {
 
   public KafkaRedisMaterializer(Config config) {
     final Properties streamsConfiguration = getStreamsConfiguration(config);
-    this.connection = getRedisConnection(config.redisUrl);
+    this.connection = getRedisConnection(config.redisUri);
     this.streams =
         new KafkaStreams(
             buildTopology(config.sourceTopic, connection.async()),

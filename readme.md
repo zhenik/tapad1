@@ -16,6 +16,7 @@ Eventual consistency. Async writes, Sync reads.
 * CAP theorem
  
 ### Improvements
+0. Testing
 1. External kafka config
 2. Serde with Avro, Protobuf, ...
 3. Materializer flow control (throttling, buffering, non-blocking). Reactive
