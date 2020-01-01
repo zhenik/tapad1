@@ -29,6 +29,7 @@
     <typesafe-config.version>1.4.0</typesafe-config.version>
     <jackson.version>2.10.1</jackson.version>
     <lettuce.redis-api.version>5.2.1.RELEASE</lettuce.redis-api.version>
+    <shade.plugin.version>3.2.1</shade.plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -106,4 +107,16 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${shade.plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

@@ -37,3 +37,50 @@ services:
       ALLOW_EMPTY_PASSWORD: "yes"
     ports:
       - "6379:6379"
+
+#  App services
+  command:
+    image: zhenik/tapad1-command:${APP_VERSION}
+    build: ./command
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: "timestamp-user-action-v1"
+    ports:
+    - "8081:8080"
+    depends_on:
+      - zookeeper
+      - kafka
+
+  processor:
+    image: zhenik/tapad1-processor:${APP_VERSION}
+    build: ./processor
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_INPUT_TOPIC: "timestamp-user-action-v1"
+      KAFKA_OUTPUT_TOPIC: "analytics-v1"
+    depends_on:
+      - zookeeper
+      - kafka
+
+  materializer:
+    image: zhenik/tapad1-materializer:${APP_VERSION}
+    build: ./materializer
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_SOURCE_TOPIC: "analytics-v1"
+      REDIS_URI: "redis://redis:6379"
+    depends_on:
+      - zookeeper
+      - kafka
+      - redis
+
+  query:
+    image: zhenik/tapad1-query:${APP_VERSION}
+    build: ./query
+    environment:
+      REDIS_URI: "redis://redis:6379"
+      APP_PORT: 8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      - redis
