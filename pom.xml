@@ -13,6 +13,7 @@
     <module>schema</module>
     <module>processor</module>
     <module>materializer</module>
+    <module>query</module>
   </modules>
 
 
