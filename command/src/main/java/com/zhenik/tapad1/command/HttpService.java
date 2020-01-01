@@ -20,7 +20,6 @@ public class HttpService {
 
   @Post("/analytics")
   public HttpResponse addCommand(HttpParameters parameters) {
-    log.info("params: {}", parameters.toString());
     if (valid(parameters)) {
       final long epoch = parameters.getLong(TIMESTAMP);
       final String user = parameters.get(USER).trim();
@@ -29,6 +28,7 @@ public class HttpService {
       commandKafkaProducer.send(String.valueOf(epoch), user, action);
       return HttpResponse.of(HttpStatus.ACCEPTED);
     } else {
+      log.error("params: {}", parameters.toString());
       return HttpResponse.of(HttpStatus.BAD_REQUEST);
     }
   }
