@@ -25,10 +25,13 @@ public class AnalyticsKafkaProcessor {
 
   private static final Logger log = LoggerFactory.getLogger(AnalyticsKafkaProcessor.class);
   private final KafkaStreams streams;
+  private final Properties properties;
 
   public AnalyticsKafkaProcessor(Config config) {
-    final Properties streamsConfiguration = getStreamsConfiguration(config);
-    this.streams = new KafkaStreams(buildTopology(config), streamsConfiguration);
+    this.properties = getStreamsConfiguration(config);
+    this.streams =
+        new KafkaStreams(
+            buildTopology(config.inputTopic, config.outputTopic), properties);
   }
 
   private Properties getStreamsConfiguration(Config config) {
@@ -56,13 +59,13 @@ public class AnalyticsKafkaProcessor {
     return streamsConfiguration;
   }
 
-  Topology buildTopology(Config config) {
+  static Topology buildTopology(String inputTopic, String outputTopic) {
     final StreamsBuilder streamsBuilder = new StreamsBuilder();
     Serde<Analytics> analyticsSerde =
         Serdes.serdeFrom(new AnalyticsSerializer(), new AnalyticsDeserializer());
     analyticsSerde.configure(new HashMap<>(), false);
 
-    final KStream<String, String> sourceStream = streamsBuilder.stream(config.inputTopic);
+    final KStream<String, String> sourceStream = streamsBuilder.stream(inputTopic);
     sourceStream
         .peek((key, value) -> System.out.println(key + ": " + value))
         .groupByKey()
@@ -86,7 +89,7 @@ public class AnalyticsKafkaProcessor {
           System.out.println("Analytics -> timestamp = " + readOnlyKey + ", " + value);
           return value.view();
         })
-        .to(config.outputTopic);
+        .to(outputTopic);
 
     final Topology topology = streamsBuilder.build();
     log.info("Topology: \n{}",topology.describe());
@@ -118,5 +121,7 @@ public class AnalyticsKafkaProcessor {
       streams.close();
     }
   }
+
+  public Properties getProperties() { return properties; }
 
 }
