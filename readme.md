@@ -1,6 +1,15 @@
 # Tech task
 [Task link](https://gist.github.com/jeffreyolchovy/a961dfc3570b7e9004a9df4ac6290963)
 
+## How to run
+Execute `make`
+
+```
+// write
+curl -X POST "http://localhost:8081/analytics?timestamp=123&user=kek&click"
+// read
+curl "http://localhost:8082/analytics?timestamp=123"
+```
 ## Solution
 ![img](./doc/tapad1.png)
 
@@ -32,6 +41,8 @@ Once limits are going to be reached on READS side, it is directly relate to cach
 I propose **evaluate** other caching placement strategies:
 * caching on server side (redis, proxy, gateway, AWS CloudFront with edge locations and other cloud vendors analogs)
 * caching on client side
+* hybrid server & client side
+
 Why evaluate, because of complexity of cache consistency. Check improvements.
 Also there are possibility to scale redis. 
 
@@ -40,6 +51,7 @@ Once limits are going to be reached on WRITES side, it relates to several things
 * Command module scaling
 * Kafka cluster's quotas
 * Kafka cluster size 
+
 I propose to inspect each of these reasons to tune it better.
 
 ### Limitations
