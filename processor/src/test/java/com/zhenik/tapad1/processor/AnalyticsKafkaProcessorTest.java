@@ -1,7 +1,6 @@
 package com.zhenik.tapad1.processor;
 
 import java.util.Arrays;
-import javax.rmi.CORBA.Util;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -14,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class AnalyticsKafkaProcessorTest {
   private final String topicIn = "topic-in";
